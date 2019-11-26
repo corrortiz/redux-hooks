@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import axios from 'axios';
+import { useSelector, useDispatch } from 'react-redux';
 
 function getAllPeople() {
   return axios
@@ -7,36 +8,42 @@ function getAllPeople() {
     .catch(error => alert(`[SWPAI] ${error.stack}`));
 }
 
+const setCharacters = charactersList => ({
+  type: 'SET_CHARACTERS',
+  payload: charactersList,
+});
+
 function PeopleList() {
-  const [listOfPeople, setListOfPeople] = useState([]);
+  const searchTerm = useSelector(state => state.searchTerm);
+  const characters = useSelector(state => state.characters);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    getAllPeople().then(result => setListOfPeople(result.data));
-  }, []);
+    getAllPeople().then(result => dispatch(setCharacters(result.data)));
+  }, [dispatch]);
 
   return (
     <div>
-      <div>cont: {listOfPeople.count}</div>
-      <div>
-        next: <a href={listOfPeople.next}>{listOfPeople.next}</a>
-      </div>
       <h1>Characters</h1>
+      <h2>We are searching for: {searchTerm}</h2>
       <table>
-        <tr>
-          <th>Name</th>
-          <th>Gender</th>
-          <th>Height</th>
-        </tr>
-        {listOfPeople.results &&
-          listOfPeople.results.map(people => {
-            return (
-              <tr>
-                <td>{people.name}</td>
-                <td>{people.gender}</td>
-                <td>{people.height}</td>
-              </tr>
-            );
-          })}
+        <tbody>
+          <tr>
+            <th>Name</th>
+            <th>Gender</th>
+            <th>Height</th>
+          </tr>
+          {characters.results &&
+            characters.results.map((people, index) => {
+              return (
+                <tr key={index}>
+                  <td>{people.name}</td>
+                  <td>{people.gender}</td>
+                  <td>{people.height}</td>
+                </tr>
+              );
+            })}
+        </tbody>
       </table>
     </div>
   );
